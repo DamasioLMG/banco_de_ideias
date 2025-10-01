@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Banco de Ideias</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Banco de Ideias</h1>
+
+    <textarea id="entrada_ideia" placeholder="Digite sua ideia aqui..."></textarea>
+    
+    <div class="botoes">
+        <button onclick="melhorarIdeia()">Melhorar Ideia</button>
+        <button onclick="salvarIdeia()">Salvar Ideia</button>
+        <button onclick="atualizarUltimas()">Atualizar Últimas Ideias</button>
+    </div>
+
+    <h2>Últimas ideias salvas:</h2>
+    <textarea id="ultimas_ideias" readonly></textarea>
+    
+    <p id="contador"></p>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        async function melhorarIdeia() {
+            const ideia = document.getElementById("entrada_ideia").value;
+            if (!ideia.trim()) return alert("Digite uma ideia primeiro!");
+            const resp = await axios.post("/melhorar", { ideia });
+            document.getElementById("entrada_ideia").value = resp.data.melhorado;
+        }
+
+        async function salvarIdeia() {
+            const ideia = document.getElementById("entrada_ideia").value;
+            if (!ideia.trim()) return alert("Digite uma ideia primeiro!");
+            await axios.post("/salvar", { ideia });
+            document.getElementById("entrada_ideia").value = "";
+            atualizarUltimas();
+        }
+
+        async function atualizarUltimas() {
+            const resp = await axios.get("/ultimas");
+            document.getElementById("ultimas_ideias").value = resp.data.ultimas.join("\n");
+            const cont = await axios.get("/contador");
+            document.getElementById("contador").innerText = "Total de ideias salvas: " + cont.data.total;
+        }
+
+        // Atualizar ao carregar a página
+        window.onload = atualizarUltimas;
+    </script>
+</body>
+</html>
